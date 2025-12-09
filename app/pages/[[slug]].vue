@@ -5,7 +5,11 @@ const saving = ref(false)
 const slug = useRoute().params.slug || 'index'
 const { data: page } = await useFetch(`/api/pages/${slug}`)
 const { loggedIn } = useUserSession()
-
+// 新增：获取文章列表，仅在首页加载
+const { data: notes } = await useFetch('/api/pages', {
+  lazy: true,
+  immediate: slug === 'index'
+})
 useSeoMeta({
   titleTemplate: '%s | Atinotes',
   title: () => page.value.parsed.data?.title || 'Missing title',
@@ -102,6 +106,22 @@ function save() {
         :body="page.parsed.body"
         class="body"
       />
+      <!-- 新增：文章列表卡片 -->
+      <div v-if="slug === 'index' && notes?.length" class="mt-8 grid gap-4 sm:grid-cols-2">
+        <NuxtLink
+          v-for="note in notes"
+          :key="note.path"
+          :to="note.path"
+          class="block group"
+        >
+          <UCard class="h-full transition-shadow hover:shadow-md">
+            <template #header>
+              <h3 class="font-bold group-hover:text-primary-500">{{ note.title }}</h3>
+            </template>
+            <p class="text-sm text-gray-500 line-clamp-2">{{ note.description }}</p>
+          </UCard>
+        </NuxtLink>
+      </div>
     </UPageBody>
   </UPage>
 </template>
