@@ -135,4 +135,8 @@ textarea {
   outline: none;
   resize: none;
 }
+/* 新增：隐藏正文中的第一个 H1，防止与页面顶部标题重复 */
+:deep(.body > h1:first-child) {
+  display: none;
+}
 </style>

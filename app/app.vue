@@ -44,7 +44,7 @@ async function onSubmit(event: FormSubmitEvent<typeof state>) {
     </Head>
     <NuxtLoadingIndicator />
     <UHeader
-      title="Atinotes"
+      title="大志的博客"
       :toggle="false"
     >
       <template #right>
