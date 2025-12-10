@@ -2,24 +2,49 @@
 const editor = ref(null)
 const editing = ref(false)
 const saving = ref(false)
-const slug = useRoute().params.slug || 'index'
-const { data: page } = await useFetch(`/api/pages/${slug}`)
+const route = useRoute()
+// 使用 computed 确保 slug 响应式 (虽然路由变化通常会重载组件)
+const slug = computed(() => route.params.slug || 'index')
+// const slug = useRoute().params.slug || 'index'
+// const { data: page } = await useFetch(`/api/pages/${slug}`)
 const { loggedIn } = useUserSession()
-// 新增：获取文章列表，仅在首页加载
-const { data: notes } = await useFetch('/api/pages', {
-  lazy: true,
-  immediate: slug === 'index'
+const { locale } = useI18n() // 获取当前语言
+// 修改：传入 locale 参数，并监听 locale 变化自动刷新
+const { data: page, refresh } = await useFetch(() => `/api/pages/${slug.value}`, {
+  query: { locale }
 })
+
+// 修改：传入 locale 参数
+const { data: notes, refresh: refreshNotes } = await useFetch('/api/pages', {
+  lazy: true,
+  immediate: slug.value === 'index',
+  query: { locale }
+})
+// 新增：获取文章列表，仅在首页加载
+// const { data: notes } = await useFetch('/api/pages', {
+//   lazy: true,
+//   immediate: slug === 'index'
+// })
+
+// 监听语言变化，刷新数据
+watch(locale, () => {
+  refresh()
+  if (slug.value === 'index') {
+    refreshNotes()
+  }
+})
+
 useSeoMeta({
   titleTemplate: '%s | Atinotes',
-  title: () => page.value.parsed.data?.title || 'Missing title',
-  description: () => page.value.parsed.data?.description || 'Missing description',
-  ogTitle: () => (page.value.parsed.data?.title || 'Missing title') + ' | Atinotes'
+  title: () => page.value?.parsed?.data?.title || 'Missing title',
+  description: () => page.value?.parsed?.data?.description || 'Missing description',
+  ogTitle: () => (page.value?.parsed?.data?.title || 'Missing title') + ' | Atinotes'
+
 })
 
 defineOgImageComponent('OgImagePage', {
-  title: page.value.parsed.data?.title || 'Missing title',
-  description: page.value.parsed.data?.description || 'Missing description'
+  title: computed(() => page.value?.parsed?.data?.title || 'Missing title'),
+  description: computed(() => page.value?.parsed?.data?.description || 'Missing description')
 })
 
 async function editMode() {
@@ -41,12 +66,16 @@ function autogrow() {
 function save() {
   if (!editing.value || saving.value) return
   saving.value = true
-  $fetch(`/api/pages/${slug}`, {
+  // 修改：保存时传入 locale
+  $fetch(`/api/pages/${slug.value}`, {
     method: 'PUT',
+    query: { locale: locale.value },
     body: { body: page.value.body }
   }).then(async ({ parsed }) => {
     page.value.parsed = parsed
     editing.value = saving.value = false
+    // 如果是首页，保存后刷新列表，因为可能改了标题或描述
+    if (slug.value === 'index') refreshNotes()
   }).catch((err) => {
     editing.value = saving.value = false
     alert(err.data.message)
@@ -57,7 +86,7 @@ function save() {
 <template>
   <UPage>
     <template
-      v-if="page.parsed?.toc?.links?.length"
+      v-if="page?.parsed?.toc?.links?.length"
       #right
     >
       <UContentToc :links="page.parsed?.toc?.links" />
