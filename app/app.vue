@@ -4,6 +4,8 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 const { loggedIn, fetch: refreshSession, clear } = useUserSession()
 const toast = useToast()
 const { t, locale, locales, setLocale } = useI18n() // 新增 i18n
+// 新增：单独获取 localePath
+const localePath = useLocalePath() // 用于生成带语言前缀的链接，这算是啥提供的？ nuxt/i18n 的吗？ 
 const loginModal = ref(false)
 const logging = ref(false)
 const state = reactive({
@@ -49,7 +51,7 @@ const localeItems = computed(() => [
     // 当前选中的语言显示对勾图标
     icon: l.code === locale.value ? 'i-lucide-check' : undefined,
     // 点击时切换语言
-    onSelect: () => setLocale(l.code)
+    onSelect: () => navigateTo(localePath('/', l.code))
   }))
 ])
 </script>
@@ -62,6 +64,7 @@ const localeItems = computed(() => [
     <NuxtLoadingIndicator />
     <UHeader
       :title="$t('title')" 
+      :to="localePath('/')" 
       :toggle="false"
     >
       <template #right>

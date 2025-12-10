@@ -9,6 +9,7 @@ const slug = computed(() => route.params.slug || 'index')
 // const { data: page } = await useFetch(`/api/pages/${slug}`)
 const { loggedIn } = useUserSession()
 const { locale } = useI18n() // 获取当前语言
+const localePath = useLocalePath() // 新增：引入 localePath
 // 修改：传入 locale 参数，并监听 locale 变化自动刷新
 const { data: page, refresh } = await useFetch(() => `/api/pages/${slug.value}`, {
   query: { locale }
@@ -140,7 +141,7 @@ function save() {
         <NuxtLink
           v-for="note in notes"
           :key="note.path"
-          :to="note.path"
+          :to="localePath(note.path)" 
           class="block group"
         >
           <UCard class="h-full transition-shadow hover:shadow-md">
