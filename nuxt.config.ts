@@ -7,9 +7,25 @@ export default defineNuxtConfig({
     '@nuxtjs/mdc',
     'nuxt-og-image',
     'nuxt-auth-utils',
-    '@nuxtjs/plausible'
+    '@nuxtjs/plausible',
+    '@nuxtjs/i18n' // 新增模块
   ],
-
+ // 新增 i18n 配置
+  i18n: {
+    locales: [
+      { code: 'en', file: 'en.json', name: 'English' },
+      { code: 'zh', file: 'zh.json', name: '简体中文' }
+    ],
+    lazy: true,
+    langDir: 'locales',
+    defaultLocale: 'zh',
+    strategy: 'prefix_except_default', // 默认语言不带前缀，其他语言带 /en 前缀
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root'
+    }
+  },
   devtools: {
     enabled: true
   },

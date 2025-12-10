@@ -1,0 +1,11 @@
+{
+  "title": "Dazhi's Blog",
+  "login": "Login",
+  "logout": "Logout",
+  "login_to_edit": "Login to edit",
+  "password_label": "Please enter the admin password",
+  "wrong_password": "Wrong password",
+  "edit": "Edit",
+  "save": "Save",
+  "saving": "Saving..."
+}
